@@ -7,32 +7,62 @@ export const graphQLSchema = buildSchema(`
   type Department {
     id: ID!
     name: String!
+    users: [User!] 
   }
 
   type User {
     id: ID!
     risk: Float
-    departmentId: Int!
     department: Department!
   }
 
   type Query {
     users: [User!]!
+    departments: [Department!]!
+    
   }
 `);
 
-const addUserResolvers = (ctx: Context) => (users: User[]) =>
-  users.map(user =>
+//* Currently unused as UI changed to department -> user query.
+//* An improvement over the original query since original queries database for department on each user
+const addUserResolvers = (ctx: Context) => async (users: User[]) => {
+  // Get department IDs
+  const departmentIds = [...new Set(users.map(user => user.departmentId))];
+
+  // Batch load all departments at once.
+  const departments = await ctx.handlers.db.department.getByIds(ctx, {
+    ids: departmentIds,
+  });
+  const departmentMap = new Map(departments.map(dept => [dept.id, dept]));
+
+  return users.map(user =>
     Object.assign(user, {
-      department: () =>
-        ctx.handlers.db.department.getById(ctx, {
-          id: user.departmentId,
-        }),
+      department: departmentMap.get(user.departmentId),
     }),
   );
+};
 
-// Passing in ctx to all resolvers for dependency injection
-// All resolvers have access to all handlers and globals
+const addDepartmentResolvers = (ctx: Context) => async (departments: any[]) => {
+  // TODO: Should really be just one Join query
+  // Get all users for these departments
+  const users = await ctx.handlers.db.user.getAll(ctx, {});
+  const usersByDept = users.reduce((a, user) => {
+    if (!a[user.departmentId]) a[user.departmentId] = [];
+    a[user.departmentId].push(user);
+    return a;
+  }, {} as Record<string, User[]>);
+
+  return departments.map(dept =>
+    Object.assign(dept, {
+      users: usersByDept[dept.id] || [],
+    }),
+  );
+};
+
 export const createResolvers = (ctx: Context) => ({
   users: () => ctx.handlers.db.user.getAll(ctx, {}).then(addUserResolvers(ctx)),
+  departments: () =>
+    ctx.handlers.db.department
+      .getAll(ctx, {})
+      .then(addDepartmentResolvers(ctx)),
 });
