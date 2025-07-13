@@ -84,7 +84,6 @@ let colors = colormap({
 const DrawHex: React.FC<IHexProps> = props => {
   const colorIndex = Math.floor(props.value * N_SHADES);
   return (
-    // React-Hexagon "wiki" is actually empty
     <Hexagon
       key={props.i}
       q={props.q}
@@ -122,7 +121,7 @@ export const Grid: React.FC<IGridProps> = ({ departments }) => {
         const Hexes = hexagons
           .slice(0, deptUsers.length)
           .map((hex, i) => (
-            <DrawHex {...hex} i={i} value={deptUsers[i]?.risk || 0} />
+            <DrawHex key={i} {...hex} i={i} value={deptUsers[i]?.risk || 0} />
           ));
 
         return (
