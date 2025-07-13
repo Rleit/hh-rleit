@@ -7,15 +7,15 @@ import { Section } from '../../components/Section';
 import { Footer } from '../../components/Footer';
 import { Grid } from '../../components/Grid';
 
-const userRiskQuery = gql`
-  query GetUsers {
-    users {
+const departmentUserRiskQuery = gql`
+  query GetDepartmentUsers {
+    departments {
       id
-      department {
+      name
+      users {
         id
-        name
+        risk
       }
-      risk
     }
   }
 `;
@@ -45,11 +45,17 @@ type User = {
   risk: number;
 };
 
+type Department = {
+  id: number;
+  name: string;
+  users: User[];
+};
+
 export const GridIndex: React.FC<IHeroIndexProps> = () => {
   const [result] = useQuery<{
-    users: User[];
+    departments: Department[];
   }>({
-    query: userRiskQuery,
+    query: departmentUserRiskQuery,
   });
 
   if (result.fetching) {
@@ -66,13 +72,15 @@ export const GridIndex: React.FC<IHeroIndexProps> = () => {
 
   return (
     <main>
-      <TopBar />
+      {/* <TopBar /> */}
       <Section heading={'Organization Risk Matrix'} paragraph={``} />
 
       {/** Improve this section. Data provided is defined on top in GraphQL query. You can decide what you use and what you dont't.*/}
-      <GridContainer>{<Grid users={result.data.users} />}</GridContainer>
+      <GridContainer>
+        {<Grid departments={result.data.departments} />}
+      </GridContainer>
 
-      <Footer />
+      {/* <Footer /> */}
     </main>
   );
 };

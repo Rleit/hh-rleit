@@ -11,6 +11,10 @@ const DepartmentGrid = styled.div`
   grid-template-columns: repeat(3, minmax(300px, 1fr));
   gap: 10em;
 
+  @media (max-width: 1300px) {
+    grid-template-columns: repeat(2, minmax(300px, 1fr));
+  }
+
   @media (max-width: 768px) {
     width: 100%;
     margin-left: 2em;
@@ -58,13 +62,13 @@ interface IHexProps {
 }
 
 interface IGridProps {
-  users: {
+  departments: {
     id: number;
-    department: {
+    name: string;
+    users: {
       id: number;
-      name: string;
-    };
-    risk?: number;
+      risk?: number;
+    }[];
   }[];
 }
 
@@ -80,8 +84,7 @@ let colors = colormap({
 const DrawHex: React.FC<IHexProps> = props => {
   const colorIndex = Math.floor(props.value * N_SHADES);
   return (
-    // React Hexagon "wiki" is actually empty
-
+    // React-Hexagon "wiki" is actually empty
     <Hexagon
       key={props.i}
       q={props.q}
@@ -94,23 +97,10 @@ const DrawHex: React.FC<IHexProps> = props => {
   );
 };
 
-export const Grid: React.FC<IGridProps> = ({ users }) => {
-  if (!users) {
+export const Grid: React.FC<IGridProps> = ({ departments }) => {
+  if (!departments) {
     return null;
   }
-
-  const usersByDepartment = users.reduce((a, user) => {
-    const deptId = user.department.id;
-    if (!a[deptId]) {
-      a[deptId] = {
-        department: user.department,
-        users: [],
-      };
-    }
-    a[deptId].users.push(user);
-
-    return a;
-  }, {} as Record<number, { department: { id: number; name: string }; users: typeof users }>);
 
   // TODO Implement org based split
   // TODO Shape is pretty weird? and it will brake if data size changes, now it works as 101*114 = 11514
@@ -119,77 +109,72 @@ export const Grid: React.FC<IGridProps> = ({ users }) => {
 
   return (
     <DepartmentGrid id='Grid'>
-      {Object.values(usersByDepartment).map(
-        ({ department, users: deptUsers }) => {
-          // set grid based on number of users , squared to the nearest number
-          // at this current implementation it will still squish down and look weird on smaller screens
-          // but the structure stays intact
-          const gridSize = Math.ceil(Math.sqrt(deptUsers.length));
+      {Object.values(departments).map(department => {
+        const deptUsers = department.users;
 
-          const hexagons = GridGenerator.hexagon(gridSize / 2);
+        // set grid based on number of users , squared to the nearest number
+        // at this current implementation it will still squish down and look weird on smaller screens
+        // but the structure stays intact
+        const gridSize = Math.ceil(Math.sqrt(deptUsers.length));
 
-          const Hexes = hexagons
-            .slice(0, deptUsers.length)
-            .map((hex, i) => (
-              <DrawHex {...hex} i={i} value={deptUsers[i]?.risk || 0} />
-            ));
+        const hexagons = GridGenerator.hexagon(gridSize / 2);
 
-          return (
-            <DepartmentItem
-              key={department.id}
-              style={{ marginBottom: '20px' }}
+        const Hexes = hexagons
+          .slice(0, deptUsers.length)
+          .map((hex, i) => (
+            <DrawHex {...hex} i={i} value={deptUsers[i]?.risk || 0} />
+          ));
+
+        return (
+          <DepartmentItem key={department.id} style={{ marginBottom: '20px' }}>
+            <DepartmentTitleContainer>
+              <DepartmentTitle>
+                <h4>Department</h4>
+                <h4>User count</h4>
+              </DepartmentTitle>
+              <DepartmentTitle>
+                <p>{department.name.toUpperCase()}</p>
+                <p>{deptUsers.length}</p>
+              </DepartmentTitle>
+            </DepartmentTitleContainer>
+            <HexGrid
+              width={400}
+              height={400}
+              viewBox={`0 0 ${gridSize * 2} ${gridSize * 2}`}
             >
-              <DepartmentTitleContainer>
-                <DepartmentTitle>
-                  <h4>Department</h4>
-                  <h4>User count</h4>
-                </DepartmentTitle>
-                <DepartmentTitle>
-                  <p>{department.name.toUpperCase()}</p>
-                  <p>{deptUsers.length}</p>
-                </DepartmentTitle>
-              </DepartmentTitleContainer>
-
-              <HexGrid
-                width={400}
-                height={400}
-                viewBox={`0 0 ${gridSize * 2} ${gridSize * 2}`}
+              <Layout
+                size={{ x: 1, y: 1 }}
+                flat={true}
+                spacing={1.1}
+                origin={{ x: gridSize, y: gridSize }}
               >
-                <Layout
-                  size={{ x: 1, y: 1 }}
-                  flat={true}
-                  spacing={1.1}
-                  origin={{ x: gridSize, y: gridSize }}
-                >
-                  {Hexes}
-                </Layout>
-              </HexGrid>
-
-              <DepartmentTitleContainer>
-                <h2>Highest Risk</h2>
-                <DepartmentTitle>
-                  <h3>User</h3>
-                  <h3>Risk Score</h3>
-                </DepartmentTitle>
-                <DepartmentTitle>
-                  <p>
-                    {
-                      deptUsers.reduce((highest, user) =>
-                        (user.risk || 0) > (highest.risk || 0) ? user : highest,
-                      ).id
-                    }
-                  </p>
-                  <p>
-                    {Math.max(...deptUsers.map(user => user.risk || 0)).toFixed(
-                      2,
-                    )}
-                  </p>
-                </DepartmentTitle>
-              </DepartmentTitleContainer>
-            </DepartmentItem>
-          );
-        },
-      )}
+                {Hexes}
+              </Layout>
+            </HexGrid>
+            <DepartmentTitleContainer>
+              <h2>Highest Risk</h2>
+              <DepartmentTitle>
+                <h3>User</h3>
+                <h3>Risk Score</h3>
+              </DepartmentTitle>
+              <DepartmentTitle>
+                <p>
+                  {
+                    deptUsers.reduce((highest, user) =>
+                      (user.risk || 0) > (highest.risk || 0) ? user : highest,
+                    ).id
+                  }
+                </p>
+                <p>
+                  {Math.max(...deptUsers.map(user => user.risk || 0)).toFixed(
+                    2,
+                  )}
+                </p>
+              </DepartmentTitle>
+            </DepartmentTitleContainer>
+          </DepartmentItem>
+        );
+      })}
     </DepartmentGrid>
   );
 };
