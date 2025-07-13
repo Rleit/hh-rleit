@@ -27,3 +27,32 @@ export const getById: Handler<{ id: number }, Department> = (ctx, input) =>
       },
     );
   });
+
+//Batch loading departments by IDs
+export const getByIds: Handler<{ ids: number[] }, Department[]> = (
+  ctx,
+  input,
+) =>
+  new Promise((resolve, reject) => {
+    if (!input.ids || input.ids.length === 0) {
+      return resolve([]);
+    }
+
+    // Create placeholders for the IN clause (?, ?, ?, ...)
+    const placeholders = input.ids.map(() => '?').join(', ');
+
+    return ctx.globals.db.all(
+      `SELECT * FROM department WHERE id IN (${placeholders})`,
+      input.ids,
+      (err: any, results: Department[]) => {
+        if (err) {
+          return reject(err);
+        }
+        const departments = results.map(
+          result => propNamesToLowerCase(result) as Department,
+        );
+
+        resolve(departments);
+      },
+    );
+  });
