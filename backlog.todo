@@ -2,7 +2,8 @@
 Backlog UI:
     ☐ Complete refactor of hexagon grid
     Potentially either using a better documented library or implementing it from scratch with canvas as base instead of svg and viewbox headaches.
-    Current library maintainer had a good wiki link for hexagonal grid math. Good read.
+    Current library maintainer had a good wiki link for hexagonal grid math. Good read.'
+        ☐ Assuming current library used, find a better solution for keeping viewbox centered on different data set sizes
     ☐ Tooltips on hover for each hexagon
     Show user and risk.
     ☐ Filtering and sorting
@@ -14,9 +15,18 @@ Backlog Server:
     Current User query are based on the original UI concept. As the UI structure changed to Department -> Users 
     Instead we could have just query single user by ID and se their department and risk or similar
     ☐ Utilize relationships in database
-    Currently the the implementation does two queries still for department and users. 
-    Realistically we could just query the department and get all users in that department through relational query.
-    ☐ Redo user graphql queries
+    Currently the the implementation does two queries for department and users, it is better than 
+    Realistically we could just join query the department and get all users in that department through relational query.
+    '' SELECT u.id, u.risk, u.department_id, d.name as department_name
+    FROM user u
+    JOIN department d ON u.department_id = d.id
+    WHERE d.id = ?; ''
+    ☐ Risk score reasoning 
+    Currently the risk score is just a number. It would be nice to have some understanding as to why the risk score is what it is.
+    Looking at it from a user standpoint in UI
+    ☐ Filtering and sorting queries with the additional data
+    Currently the data is not complex enough to add proper filtering and sorting realistically.Best we can do is order by risk score.
+
 
     
 
