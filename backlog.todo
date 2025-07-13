@@ -1,0 +1,28 @@
+
+Backlog UI:
+    ☐ Complete refactor of hexagon grid
+    Potentially either using a better documented library or implementing it from scratch with canvas as base instead of svg and viewbox headaches.
+    Current library maintainer had a good wiki link for hexagonal grid math. Good read.
+    ☐ Tooltips on hover for each hexagon
+    Show user and risk.
+    ☐ Filtering and sorting
+    Current data does not provide a decent enough sorting opportunities to add sorting/filtering realistically.
+    Dummy data is basic. But if the data would be more complex, we would add sorting and filtering.
+
+Backlog Server:
+    ☐ Refactor user graphql queries
+    Current User query are based on the original UI concept. As the UI structure changed to Department -> Users 
+    Instead we could have just query single user by ID and se their department and risk or similar
+    ☐ Utilize relationships in database
+    Currently the the implementation does two queries still for department and users. 
+    Realistically we could just query the department and get all users in that department through relational query.
+    ☐ Redo user graphql queries
+
+    
+
+
+
+
+
+
+
