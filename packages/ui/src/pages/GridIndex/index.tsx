@@ -77,7 +77,7 @@ export const GridIndex: React.FC<IHeroIndexProps> = () => {
 
       {/** Improve this section. Data provided is defined on top in GraphQL query. You can decide what you use and what you dont't.*/}
       <GridContainer>
-        {<Grid departments={result.data.departments} />}
+        <Grid departments={result.data.departments} />
       </GridContainer>
 
       {/* <Footer /> */}
