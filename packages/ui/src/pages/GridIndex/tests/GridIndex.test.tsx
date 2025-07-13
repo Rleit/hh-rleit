@@ -32,15 +32,28 @@ describe('Home', () => {
       executeQuery: () =>
         fromValue({
           data: {
-            users: [
+            departments: [
               {
                 id: 1,
-                department: {
-                  id: 1,
-                  name: 'Engineering',
-                },
-                // Engineers are safe.
-                risk: 0,
+                name: 'Engineering',
+                users: [
+                  {
+                    id: 1,
+                    // Engineers are safe.
+                    risk: 0,
+                  },
+                ],
+              },
+              {
+                id: 2,
+                name: 'Engineering',
+                users: [
+                  {
+                    id: 2,
+                    // Engineers are safe.
+                    risk: 0,
+                  },
+                ],
               },
             ],
           },
